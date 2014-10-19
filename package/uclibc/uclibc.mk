@@ -39,7 +39,7 @@ endif
 
 UCLIBC_KCONFIG_FILE = $(UCLIBC_CONFIG_FILE)
 
-UCLIBC_KCONFIG_OPT = \
+UCLIBC_KCONFIG_OPTS = \
 		$(UCLIBC_MAKE_FLAGS) \
 		PREFIX=$(STAGING_DIR) \
 		DEVEL_PREFIX=/usr/ \
@@ -382,13 +382,13 @@ UCLIBC_WCHAR_CONFIG = $(call KCONFIG_DISABLE_OPT,UCLIBC_HAS_WCHAR,$(@D)/.config)
 endif
 
 #
-# strip
+# static/shared libs
 #
 
-ifeq ($(BR2_STRIP_none),y)
-UCLIBC_STRIP_CONFIG = $(call KCONFIG_DISABLE_OPT,DOSTRIP,$(@D)/.config)
+ifeq ($(BR2_PREFER_STATIC_LIB),y)
+UCLIBC_SHARED_LIBS_CONFIG = $(call KCONFIG_DISABLE_OPT,HAVE_SHARED,$(@D)/.config)
 else
-UCLIBC_STRIP_CONFIG = $(call KCONFIG_ENABLE_OPT,DOSTRIP,$(@D)/.config)
+UCLIBC_SHARED_LIBS_CONFIG = $(call KCONFIG_ENABLE_OPT,HAVE_SHARED,$(@D)/.config)
 endif
 
 #
@@ -430,21 +430,7 @@ define UCLIBC_KCONFIG_FIXUP_CMDS
 	$(UCLIBC_THREAD_DEBUG_CONFIG)
 	$(UCLIBC_LOCALE_CONFIG)
 	$(UCLIBC_WCHAR_CONFIG)
-	$(UCLIBC_STRIP_CONFIG)
-endef
-
-define UCLIBC_CONFIGURE_CMDS
-	$(MAKE1) -C $(UCLIBC_DIR) \
-		$(UCLIBC_MAKE_FLAGS) \
-		PREFIX=$(STAGING_DIR) \
-		DEVEL_PREFIX=/usr/ \
-		RUNTIME_PREFIX=$(STAGING_DIR) \
-		headers startfiles \
-		install_headers install_startfiles
-	$(TARGET_CROSS)gcc -nostdlib \
-		-nostartfiles -shared -x c /dev/null -o $(STAGING_DIR)/usr/lib/libc.so
-	$(TARGET_CROSS)gcc -nostdlib \
-		-nostartfiles -shared -x c /dev/null -o $(STAGING_DIR)/usr/lib/libm.so
+	$(UCLIBC_SHARED_LIBS_CONFIG)
 endef
 
 ifeq ($(BR2_UCLIBC_INSTALL_TEST_SUITE),y)
@@ -471,12 +457,8 @@ else
 endif
 
 define UCLIBC_BUILD_CMDS
-	$(UCLIBC_MAKE) -C $(@D) \
-		$(UCLIBC_MAKE_FLAGS) \
-		PREFIX= \
-		DEVEL_PREFIX=/ \
-		RUNTIME_PREFIX=/ \
-		all
+	$(UCLIBC_MAKE) -C $(@D) $(UCLIBC_MAKE_FLAGS) headers
+	$(UCLIBC_MAKE) -C $(@D) $(UCLIBC_MAKE_FLAGS)
 	$(MAKE) -C $(@D)/utils \
 		PREFIX=$(HOST_DIR) \
 		HOSTCC="$(HOSTCC)" hostutils
@@ -534,6 +516,3 @@ define UCLIBC_INSTALL_STAGING_CMDS
 endef
 
 $(eval $(kconfig-package))
-
-# Before uClibc is built, we must have the second stage cross-compiler
-$(UCLIBC_TARGET_BUILD): | host-gcc-intermediate

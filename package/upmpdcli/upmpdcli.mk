@@ -4,11 +4,11 @@
 #
 ################################################################################
 
-UPMPDCLI_VERSION = 0.7.1
+UPMPDCLI_VERSION = 0.8.3
 UPMPDCLI_SITE = http://www.lesbonscomptes.com/upmpdcli/downloads
 UPMPDCLI_LICENSE = GPLv2+
 UPMPDCLI_LICENSE_FILES = COPYING
-UPMPDCLI_DEPENDENCIES = expat libupnp libmpdclient
+UPMPDCLI_DEPENDENCIES = expat libcurl libupnp libmpdclient
 
 # Upmpdcli only runs if user upmpdcli exists
 define UPMPDCLI_USERS

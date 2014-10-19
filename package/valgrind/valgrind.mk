@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-VALGRIND_VERSION = 3.9.0
-VALGRIND_SITE    = http://valgrind.org/downloads
-VALGRIND_SOURCE  = valgrind-$(VALGRIND_VERSION).tar.bz2
+VALGRIND_VERSION = 3.10.0
+VALGRIND_SITE = http://valgrind.org/downloads
+VALGRIND_SOURCE = valgrind-$(VALGRIND_VERSION).tar.bz2
 VALGRIND_LICENSE = GPLv2 GFDLv1.2
 VALGRIND_LICENSE_FILES = COPYING COPYING.DOCS
-VALGRIND_CONF_OPT = --disable-tls
+VALGRIND_CONF_OPTS = --disable-tls
 VALGRIND_AUTORECONF = YES
 
 # On ARM, Valgrind only supports ARMv7, and uses the arch part of the
@@ -17,8 +17,8 @@ VALGRIND_AUTORECONF = YES
 # not. Therefore, we adjust the host tuple to specify we're on
 # ARMv7. The valgrind package is guaranteed, through Config.in, to
 # only be selected on Cortex A8 and Cortex A9 platforms.
-ifeq ($(BR2_cortex_a8)$(BR2_cortex_a9),y)
-VALGRIND_CONF_OPT += \
+ifeq ($(BR2_cortex_a5)$(BR2_cortex_a7)$(BR2_cortex_a8)$(BR2_cortex_a9)$(BR2_cortex_a12)$(BR2_cortex_a15),y)
+VALGRIND_CONF_OPTS += \
 	--host=$(patsubst arm-%,armv7-%,$(GNU_TARGET_NAME))
 endif
 

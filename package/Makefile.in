@@ -38,8 +38,8 @@ endif
 # Compute GNU_TARGET_NAME
 GNU_TARGET_NAME = $(ARCH)-$(TARGET_VENDOR)-$(TARGET_OS)-$(LIBC)$(ABI)
 
-# Blackfin FLAT needs uclinux
-ifeq ($(BR2_bfin)$(BR2_BINFMT_FLAT),yy)
+# FLAT binary format needs uclinux
+ifeq ($(BR2_BINFMT_FLAT),y)
 TARGET_OS = uclinux
 else
 TARGET_OS = linux
@@ -232,9 +232,6 @@ HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(HOST_DIR)/usr/lib -Wl,-rpath,$(HOST_DIR)/
 HOSTCC_VERSION := $(shell $(HOSTCC_NOCCACHE) --version | \
 	sed -n 's/^.* \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)[ ]*.*$$/\1\2\3/p')
 
-HOST_PERL_ARCHNAME := $(shell perl -MConfig -e "print Config->{archname}")
-export PERL5LIB := $(HOST_DIR)/usr/lib/perl5/$(HOST_PERL_ARCHNAME):$(HOST_DIR)/usr/lib/perl5
-
 TARGET_CONFIGURE_OPTS = PATH=$(BR_PATH) \
 		AR="$(TARGET_AR)" \
 		AS="$(TARGET_AS)" \
@@ -373,7 +370,7 @@ endif
 ifeq ($(BR2_ENABLE_DEBUG),y)
 ENABLE_DEBUG := --enable-debug
 else
-ENABLE_DEBUG :=
+ENABLE_DEBUG := --disable-debug
 endif
 
 ifeq ($(BR2_PREFER_STATIC_LIB),y)

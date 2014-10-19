@@ -20,7 +20,7 @@ ifeq ($(BR2_PACKAGE_BUSYBOX),y)
 COREUTILS_DEPENDENCIES = busybox
 endif
 
-COREUTILS_BIN_PROGS = cat chgrp chmod chown cp date dd df dir echo false hostname \
+COREUTILS_BIN_PROGS = cat chgrp chmod chown cp date dd df dir echo false \
 	ln ls mkdir mknod mv pwd rm rmdir vdir sleep stty sync touch true \
 	uname join
 
@@ -57,12 +57,11 @@ COREUTILS_CONF_ENV = ac_cv_c_restrict=no \
 		gl_cv_func_working_mkstemp=yes \
 		gl_cv_func_working_utimes=yes \
 		gl_getline_needs_run_time_check=no \
+		gl_cv_have_proc_uptime=yes \
 		utils_cv_localtime_cache=no \
 		PERL=missing
 
-COREUTILS_CONF_OPT = --disable-rpath \
-		--disable-dependency-tracking \
-		--enable-install-program=hostname
+COREUTILS_CONF_OPTS = --disable-rpath
 
 define COREUTILS_POST_INSTALL
 	# some things go in root rather than usr
