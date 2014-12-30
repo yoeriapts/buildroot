@@ -13,7 +13,7 @@ LIBJSON_LICENSE_FILES = License.txt
 
 LIBJSON_CXXFLAGS = $(TARGET_CFLAGS) -DNDEBUG
 
-ifeq ($(BR2_PREFER_STATIC_LIB),y)
+ifeq ($(BR2_STATIC_LIBS),y)
 LIBJSON_MAKE_OPTS += SHARED=0
 else
 LIBJSON_MAKE_OPTS += SHARED=1
@@ -23,14 +23,14 @@ endif
 LIBJSON_MAKE_OPTS += BUILD_TYPE= CXXFLAGS="$(LIBJSON_CXXFLAGS)"
 
 define LIBJSON_EXTRACT_CMDS
-	unzip -d $(@D) $(DL_DIR)/$(LIBJSON_SOURCE)
+	$(UNZIP) -d $(@D) $(DL_DIR)/$(LIBJSON_SOURCE)
 	mv $(@D)/libjson/* $(@D)
 	$(RM) -r $(@D)/libjson
 	$(SED) '/ldconfig/d' $(@D)/makefile
 endef
 
 define LIBJSON_BUILD_CMDS
-	mkdir -p $(@D)/Objects_$(if $(BR2_PREFER_STATIC_LIB),static,shared) \
+	mkdir -p $(@D)/Objects_$(if $(BR2_STATIC_LIBS),static,shared) \
 		$(@D)/_internal/Source/Dependencies
 	$(TARGET_MAKE_ENV) $(MAKE) $(TARGET_CONFIGURE_OPTS) \
 		$(LIBJSON_MAKE_OPTS) -C $(@D)

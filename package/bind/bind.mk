@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BIND_VERSION = 9.9.6
+BIND_VERSION = 9.9.6-P1
 BIND_SITE = ftp://ftp.isc.org/isc/bind9/$(BIND_VERSION)
 BIND_INSTALL_STAGING = YES
 BIND_CONFIG_SCRIPTS = bind9-config isc-config.sh
@@ -18,12 +18,15 @@ BIND_TARGET_SERVER_SBIN += lwresd named named-checkconf named-checkzone
 BIND_TARGET_SERVER_SBIN += named-compilezone rndc rndc-confgen dnssec-dsfromkey
 BIND_TARGET_SERVER_SBIN += dnssec-keyfromlabel dnssec-signzone
 BIND_TARGET_TOOLS_BIN = dig host nslookup nsupdate
-BIND_CONF_ENV = BUILD_CC="$(TARGET_CC)" \
-		BUILD_CFLAGS="$(TARGET_CFLAGS)"
+BIND_CONF_ENV = \
+	BUILD_CC="$(TARGET_CC)" \
+	BUILD_CFLAGS="$(TARGET_CFLAGS)"
 BIND_CONF_OPTS = \
-		--with-randomdev=/dev/urandom \
-		--enable-epoll --with-libtool \
-		--with-gssapi=no --enable-rrl
+	--with-randomdev=/dev/urandom \
+	--enable-epoll \
+	--with-libtool \
+	--with-gssapi=no \
+	--enable-rrl
 
 ifeq ($(BR2_PACKAGE_LIBCAP),y)
 	BIND_CONF_OPTS += --enable-linux-caps
@@ -76,8 +79,8 @@ endef
 
 ifeq ($(BR2_PACKAGE_BIND_SERVER),y)
 define BIND_INSTALL_INIT_SYSV
-        $(INSTALL) -m 0755 -D package/bind/S81named \
-                $(TARGET_DIR)/etc/init.d/S81named
+	$(INSTALL) -m 0755 -D package/bind/S81named \
+		$(TARGET_DIR)/etc/init.d/S81named
 endef
 else
 BIND_POST_INSTALL_TARGET_HOOKS += BIND_TARGET_REMOVE_SERVER
@@ -88,7 +91,7 @@ BIND_POST_INSTALL_TARGET_HOOKS += BIND_TARGET_REMOVE_TOOLS
 endif
 
 define BIND_USERS
-named -1 named -1 * /etc/bind - - BIND daemon
+	named -1 named -1 * /etc/bind - - BIND daemon
 endef
 
 $(eval $(autotools-package))

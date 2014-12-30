@@ -4,36 +4,38 @@
 #
 ################################################################################
 
-DBUS_VERSION = 1.8.8
+DBUS_VERSION = 1.8.12
 DBUS_SITE = http://dbus.freedesktop.org/releases/dbus
 DBUS_LICENSE = AFLv2.1 GPLv2+
 DBUS_LICENSE_FILES = COPYING
 DBUS_INSTALL_STAGING = YES
 
 define DBUS_PERMISSIONS
-/usr/libexec/dbus-daemon-launch-helper f 4755 0 0 - - - - -
+	/usr/libexec/dbus-daemon-launch-helper f 4755 0 0 - - - - -
 endef
-
-DBUS_DEPENDENCIES = host-pkgconf expat
-
-DBUS_CONF_ENV = ac_cv_have_abstract_sockets=yes
-DBUS_CONF_OPTS = --with-dbus-user=dbus \
-		--disable-tests \
-		--disable-asserts \
-		--enable-abstract-sockets \
-		--disable-selinux \
-		--disable-xml-docs \
-		--disable-doxygen-docs \
-		--disable-dnotify \
-		--with-xml=expat \
-		--with-system-socket=/var/run/dbus/system_bus_socket \
-		--with-system-pid-file=/var/run/messagebus.pid
 
 define DBUS_USERS
 	dbus -1 dbus -1 * /var/run/dbus - dbus DBus messagebus user
 endef
 
-ifeq ($(BR2_PREFER_STATIC_LIB),y)
+
+DBUS_DEPENDENCIES = host-pkgconf expat
+
+DBUS_CONF_ENV = ac_cv_have_abstract_sockets=yes
+DBUS_CONF_OPTS = \
+	--with-dbus-user=dbus \
+	--disable-tests \
+	--disable-asserts \
+	--enable-abstract-sockets \
+	--disable-selinux \
+	--disable-xml-docs \
+	--disable-doxygen-docs \
+	--disable-dnotify \
+	--with-xml=expat \
+	--with-system-socket=/var/run/dbus/system_bus_socket \
+	--with-system-pid-file=/var/run/messagebus.pid
+
+ifeq ($(BR2_STATIC_LIBS),y)
 DBUS_CONF_OPTS += LIBS='-pthread'
 endif
 
@@ -86,16 +88,16 @@ endef
 
 HOST_DBUS_DEPENDENCIES = host-pkgconf host-expat
 HOST_DBUS_CONF_OPTS = \
-		--with-dbus-user=dbus \
-		--disable-tests \
-		--disable-asserts \
-		--enable-abstract-sockets \
-		--disable-selinux \
-		--disable-xml-docs \
-		--disable-doxygen-docs \
-		--enable-dnotify \
-		--without-x \
-		--with-xml=expat
+	--with-dbus-user=dbus \
+	--disable-tests \
+	--disable-asserts \
+	--enable-abstract-sockets \
+	--disable-selinux \
+	--disable-xml-docs \
+	--disable-doxygen-docs \
+	--enable-dnotify \
+	--without-x \
+	--with-xml=expat
 
 # dbus for the host
 DBUS_HOST_INTROSPECT = $(HOST_DBUS_DIR)/introspect.xml

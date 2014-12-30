@@ -10,22 +10,22 @@ SPICE_SITE = http://www.spice-space.org/download/releases
 SPICE_LICENSE = LGPLv2.1+
 SPICE_LICENSE_FILES = COPYING
 SPICE_INSTALL_STAGING = YES
-SPICE_DEPENDENCIES =    \
-    alsa-lib            \
-    celt051             \
-    jpeg                \
-    openssl             \
-    pixman              \
-    python-pyparsing    \
-    spice-protocol      \
+SPICE_DEPENDENCIES =        \
+	alsa-lib            \
+	celt051             \
+	jpeg                \
+	openssl             \
+	pixman              \
+	python-pyparsing    \
+	spice-protocol      \
 
 # We disable everything for now, because the dependency tree can become
 # quite deep if we try to enable some features, and I have not tested that.
-SPICE_CONF_OPTS =           \
-  --disable-opengl          \
-  --disable-smartcard       \
-  --disable-automated-tests \
-  --without-sasl            \
+SPICE_CONF_OPTS =                 \
+	--disable-opengl          \
+	--disable-smartcard       \
+	--disable-automated-tests \
+	--without-sasl            \
 
 SPICE_DEPENDENCIES += host-pkgconf
 
@@ -58,7 +58,7 @@ SPICE_MAKE_ENV = PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/
 # libjpeg isn't, hence the two-line tweak
 define SPICE_POST_INSTALL_STAGING_FIX_PC
 	$(SED) 's/^\(Requires.private:.*\)$$/\1 zlib/; s/^\(Libs.private:.*\)$$/\1 -ljpeg/;'    \
-	       "$(STAGING_DIR)/usr/lib/pkgconfig/spice-server.pc"
+		"$(STAGING_DIR)/usr/lib/pkgconfig/spice-server.pc"
 endef
 SPICE_POST_INSTALL_STAGING_HOOKS += SPICE_POST_INSTALL_STAGING_FIX_PC
 

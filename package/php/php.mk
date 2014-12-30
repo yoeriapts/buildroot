@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PHP_VERSION = 5.5.18
+PHP_VERSION = 5.5.20
 PHP_SITE = http://www.php.net/distributions
 PHP_SOURCE = php-$(PHP_VERSION).tar.xz
 PHP_INSTALL_STAGING = YES
@@ -13,12 +13,13 @@ PHP_INSTALL_TARGET_OPTS = INSTALL_ROOT=$(TARGET_DIR) install
 PHP_DEPENDENCIES = host-pkgconf
 PHP_LICENSE = PHP
 PHP_LICENSE_FILES = LICENSE
-PHP_CONF_OPTS = --mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--disable-all \
-		--without-pear \
-		--with-config-file-path=/etc \
-		--disable-rpath
+PHP_CONF_OPTS = \
+	--mandir=/usr/share/man \
+	--infodir=/usr/share/info \
+	--disable-all \
+	--without-pear \
+	--with-config-file-path=/etc \
+	--disable-rpath
 PHP_CONF_ENV = EXTRA_LIBS="$(PHP_EXTRA_LIBS)"
 
 ifeq ($(BR2_ENDIAN),"BIG")
@@ -31,7 +32,7 @@ PHP_CONFIG_SCRIPTS = php-config
 PHP_CFLAGS = $(TARGET_CFLAGS)
 
 # We need to force dl "detection"
-ifeq ($(BR2_PREFER_STATIC_LIB),)
+ifeq ($(BR2_STATIC_LIBS),)
 PHP_CONF_ENV += ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes
 PHP_EXTRA_LIBS += -ldl
 else
@@ -50,32 +51,39 @@ PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_CGI),,--disable-cgi)
 PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_FPM),--enable-fpm,--disable-fpm)
 
 ### Extensions
-PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_EXT_SOCKETS),--enable-sockets) \
-		$(if $(BR2_PACKAGE_PHP_EXT_POSIX),--enable-posix) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SESSION),--enable-session) \
-		$(if $(BR2_PACKAGE_PHP_EXT_HASH),--enable-hash) \
-		$(if $(BR2_PACKAGE_PHP_EXT_DOM),--enable-dom) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SIMPLEXML),--enable-simplexml) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SOAP),--enable-soap) \
-		$(if $(BR2_PACKAGE_PHP_EXT_XML),--enable-xml) \
-		$(if $(BR2_PACKAGE_PHP_EXT_XMLREADER),--enable-xmlreader) \
-		$(if $(BR2_PACKAGE_PHP_EXT_XMLWRITER),--enable-xmlwriter) \
-		$(if $(BR2_PACKAGE_PHP_EXT_EXIF),--enable-exif) \
-		$(if $(BR2_PACKAGE_PHP_EXT_FTP),--enable-ftp) \
-		$(if $(BR2_PACKAGE_PHP_EXT_JSON),--enable-json) \
-		$(if $(BR2_PACKAGE_PHP_EXT_TOKENIZER),--enable-tokenizer) \
-		$(if $(BR2_PACKAGE_PHP_EXT_PCNTL),--enable-pcntl) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SHMOP),--enable-shmop) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SYSVMSG),--enable-sysvmsg) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SYSVSEM),--enable-sysvsem) \
-		$(if $(BR2_PACKAGE_PHP_EXT_SYSVSHM),--enable-sysvshm) \
-		$(if $(BR2_PACKAGE_PHP_EXT_ZIP),--enable-zip) \
-		$(if $(BR2_PACKAGE_PHP_EXT_CTYPE),--enable-ctype) \
-		$(if $(BR2_PACKAGE_PHP_EXT_FILTER),--enable-filter) \
-		$(if $(BR2_PACKAGE_PHP_EXT_CALENDAR),--enable-calendar) \
-		$(if $(BR2_PACKAGE_PHP_EXT_FILEINFO),--enable-fileinfo) \
-		$(if $(BR2_PACKAGE_PHP_EXT_BCMATH),--enable-bcmath) \
-		$(if $(BR2_PACKAGE_PHP_EXT_PHAR),--enable-phar)
+PHP_CONF_OPTS += \
+	$(if $(BR2_PACKAGE_PHP_EXT_SOCKETS),--enable-sockets) \
+	$(if $(BR2_PACKAGE_PHP_EXT_POSIX),--enable-posix) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SESSION),--enable-session) \
+	$(if $(BR2_PACKAGE_PHP_EXT_HASH),--enable-hash) \
+	$(if $(BR2_PACKAGE_PHP_EXT_DOM),--enable-dom) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SIMPLEXML),--enable-simplexml) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SOAP),--enable-soap) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XML),--enable-xml) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XMLREADER),--enable-xmlreader) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XMLWRITER),--enable-xmlwriter) \
+	$(if $(BR2_PACKAGE_PHP_EXT_EXIF),--enable-exif) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FTP),--enable-ftp) \
+	$(if $(BR2_PACKAGE_PHP_EXT_JSON),--enable-json) \
+	$(if $(BR2_PACKAGE_PHP_EXT_TOKENIZER),--enable-tokenizer) \
+	$(if $(BR2_PACKAGE_PHP_EXT_PCNTL),--enable-pcntl) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SHMOP),--enable-shmop) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVMSG),--enable-sysvmsg) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVSEM),--enable-sysvsem) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVSHM),--enable-sysvshm) \
+	$(if $(BR2_PACKAGE_PHP_EXT_ZIP),--enable-zip) \
+	$(if $(BR2_PACKAGE_PHP_EXT_CTYPE),--enable-ctype) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FILTER),--enable-filter) \
+	$(if $(BR2_PACKAGE_PHP_EXT_CALENDAR),--enable-calendar) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FILEINFO),--enable-fileinfo) \
+	$(if $(BR2_PACKAGE_PHP_EXT_BCMATH),--enable-bcmath) \
+	$(if $(BR2_PACKAGE_PHP_EXT_MBSTRING),--enable-mbstring) \
+	$(if $(BR2_PACKAGE_PHP_EXT_PHAR),--enable-phar)
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_MCRYPT),y)
+	PHP_CONF_OPTS += --with-mcrypt=$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += libmcrypt
+endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_OPENSSL),y)
 	PHP_CONF_OPTS += --with-openssl=$(STAGING_DIR)/usr
@@ -212,6 +220,14 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_SNMP),y)
 	PHP_DEPENDENCIES += netsnmp
 endif
 
+ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
+	PHP_CONF_OPTS += --with-gd --with-jpeg-dir=$(STAGING_DIR)/usr \
+		--with-png-dir=$(STAGING_DIR)/usr \
+		--with-zlib-dir=$(STAGING_DIR)/usr \
+		--with-freetype-dir=$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += jpeg libpng freetype
+endif
+
 define PHP_EXTENSIONS_FIXUP
 	$(SED) "/prefix/ s:/usr:$(STAGING_DIR)/usr:" \
 		$(STAGING_DIR)/usr/bin/phpize
@@ -224,10 +240,8 @@ PHP_POST_INSTALL_TARGET_HOOKS += PHP_EXTENSIONS_FIXUP
 define PHP_INSTALL_FIXUP
 	rm -rf $(TARGET_DIR)/usr/lib/php
 	rm -f $(TARGET_DIR)/usr/bin/phpize
-	if [ ! -f $(TARGET_DIR)/etc/php.ini ]; then \
-		$(INSTALL) -m 0755  $(PHP_DIR)/php.ini-production \
-			$(TARGET_DIR)/etc/php.ini; \
-	fi
+	$(INSTALL) -D -m 0755 $(PHP_DIR)/php.ini-production \
+		$(TARGET_DIR)/etc/php.ini
 endef
 
 PHP_POST_INSTALL_TARGET_HOOKS += PHP_INSTALL_FIXUP

@@ -46,18 +46,46 @@ HOST_QEMU_DEPENDENCIES = host-pkgconf host-zlib host-libglib2 host-pixman
 
 HOST_QEMU_ARCH = $(ARCH)
 ifeq ($(HOST_QEMU_ARCH),i486)
-    HOST_QEMU_ARCH = i386
+HOST_QEMU_ARCH = i386
 endif
 ifeq ($(HOST_QEMU_ARCH),i586)
-    HOST_QEMU_ARCH = i386
+HOST_QEMU_ARCH = i386
 endif
 ifeq ($(HOST_QEMU_ARCH),i686)
-    HOST_QEMU_ARCH = i386
+HOST_QEMU_ARCH = i386
 endif
 ifeq ($(HOST_QEMU_ARCH),powerpc)
-    HOST_QEMU_ARCH = ppc
+HOST_QEMU_ARCH = ppc
 endif
 HOST_QEMU_TARGETS = $(HOST_QEMU_ARCH)-linux-user
+
+ifeq ($(BR2_PACKAGE_HOST_QEMU),y)
+HOST_QEMU_HOST_SYSTEM_TYPE = $(shell uname -s)
+ifneq ($(HOST_QEMU_HOST_SYSTEM_TYPE),Linux)
+$(error "qemu-user can only be used on Linux hosts")
+endif
+
+HOST_QEMU_HOST_SYSTEM_VERSION_MAJOR = $(shell uname -r | cut -f1 -d'.')
+HOST_QEMU_HOST_SYSTEM_VERSION_MINOR = $(shell uname -r | cut -f2 -d'.')
+HOST_QEMU_TARGET_SYSTEM_VERSION_MAJOR = $(shell echo $(BR2_TOOLCHAIN_HEADERS_AT_LEAST) | cut -f1 -d'.')
+HOST_QEMU_TARGET_SYSTEM_VERSION_MINOR = $(shell echo $(BR2_TOOLCHAIN_HEADERS_AT_LEAST) | cut -f2 -d'.')
+HOST_QEMU_COMPARE_VERSION_MAJOR = $(shell test $(HOST_QEMU_HOST_SYSTEM_VERSION_MAJOR) -ge $(HOST_QEMU_TARGET_SYSTEM_VERSION_MAJOR) && echo OK)
+HOST_QEMU_COMPARE_VERSION_MINOR = $(shell test $(HOST_QEMU_HOST_SYSTEM_VERSION_MINOR) -ge $(HOST_QEMU_TARGET_SYSTEM_VERSION_MINOR) && echo OK)
+
+#
+# The principle of qemu-user is that it emulates the instructions of
+# the target architecture when running the binary, and then when this
+# binary does a system call, it converts this system call into a
+# system call on the host machine. This mechanism makes an assumption:
+# that the target binary will not do system calls that do not exist on
+# the host. This basically requires that the target binary should be
+# built with kernel headers that are older or the same as the kernel
+# version running on the host machine.
+#
+ifneq ($(HOST_QEMU_COMPARE_VERSION_MAJOR)$(HOST_QEMU_COMPARE_VERSION_MINOR),OKOK)
+$(error "Refusing to build qemu-user: target Linux version newer than host's.")
+endif
+endif
 
 define HOST_QEMU_CONFIGURE_CMDS
 	cd $(@D); $(HOST_CONFIGURE_OPTS) ./configure    \
@@ -75,7 +103,7 @@ define HOST_QEMU_BUILD_CMDS
 endef
 
 define HOST_QEMU_INSTALL_CMDS
-	$(HOST_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(HOST_DIR) install
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D) install
 endef
 
 $(eval $(host-generic-package))
@@ -96,8 +124,20 @@ QEMU_OPTS =
 
 QEMU_VARS = \
 	LIBTOOL=$(HOST_DIR)/usr/bin/libtool \
-    PYTHON=$(HOST_DIR)/usr/bin/python \
-    PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
+	PYTHON=$(HOST_DIR)/usr/bin/python2 \
+	PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
+
+# If we want to specify only a subset of targets, we must still enable all
+# of them, so that QEMU properly builds its list of default targets, from
+# which it then checks if the specified sub-set is valid. That's what we
+# do in the first part of the if-clause.
+# Otherwise, if we do not want to pass a sub-set of targets, we then need
+# to either enable or disable -user and/or -system emulation appropriately.
+# That's what we do in the else-clause.
+ifneq ($(call qstrip,$(BR2_PACKAGE_QEMU_CUSTOM_TARGETS)),)
+QEMU_OPTS += --enable-system --enable-linux-user
+QEMU_OPTS += --target-list="$(call qstrip,$(BR2_PACKAGE_QEMU_CUSTOM_TARGETS))"
+else
 
 ifeq ($(BR2_PACKAGE_QEMU_SYSTEM),y)
 QEMU_OPTS += --enable-system
@@ -111,8 +151,6 @@ else
 QEMU_OPTS += --disable-linux-user
 endif
 
-ifneq ($(call qstrip,$(BR2_PACKAGE_QEMU_CUSTOM_TARGETS)),)
-QEMU_OPTS += --target-list="$(call qstrip,$(BR2_PACKAGE_QEMU_CUSTOM_TARGETS))"
 endif
 
 ifeq ($(BR2_PACKAGE_QEMU_SDL),y)
@@ -123,46 +161,52 @@ else
 QEMU_OPTS += --disable-sdl
 endif
 
+ifeq ($(BR2_PACKAGE_QEMU_FDT),y)
+QEMU_OPTS += --enable-fdt
+QEMU_DEPENDENCIES += dtc
+else
+QEMU_OPTS += --disable-fdt
+endif
+
 define QEMU_CONFIGURE_CMDS
-	( cd $(@D);                                 \
-	    LIBS='$(QEMU_LIBS)'                     \
-	    $(TARGET_CONFIGURE_OPTS)                \
-	    $(TARGET_CONFIGURE_ARGS)                \
-	    $(QEMU_VARS)                            \
-	    ./configure                             \
-	        --prefix=/usr                       \
-	        --cross-prefix=$(TARGET_CROSS)      \
-	        --with-system-pixman                \
-	        --audio-drv-list=                   \
-	        --enable-kvm                        \
-	        --enable-attr                       \
-	        --enable-vhost-net                  \
-	        --disable-bsd-user                  \
-	        --disable-xen                       \
-	        --disable-slirp                     \
-	        --disable-vnc                       \
-	        --disable-virtfs                    \
-	        --disable-brlapi                    \
-	        --disable-curses                    \
-	        --disable-curl                      \
-	        --disable-fdt                       \
-	        --disable-bluez                     \
-	        --disable-guest-base                \
-	        --disable-uuid                      \
-	        --disable-vde                       \
-	        --disable-linux-aio                 \
-	        --disable-cap-ng                    \
-	        --disable-docs                      \
-	        --disable-spice                     \
-	        --disable-rbd                       \
-	        --disable-libiscsi                  \
-	        --disable-usb-redir                 \
-	        --disable-smartcard-nss             \
-	        --disable-strip                     \
-	        --disable-seccomp                   \
-	        --disable-sparse                    \
-	        --disable-tools                     \
-	        $(QEMU_OPTS)                        \
+	( cd $(@D);                                     \
+		LIBS='$(QEMU_LIBS)'                     \
+		$(TARGET_CONFIGURE_OPTS)                \
+		$(TARGET_CONFIGURE_ARGS)                \
+		$(QEMU_VARS)                            \
+		./configure                             \
+			--prefix=/usr                   \
+			--cross-prefix=$(TARGET_CROSS)  \
+			--with-system-pixman            \
+			--audio-drv-list=               \
+			--enable-kvm                    \
+			--enable-attr                   \
+			--enable-vhost-net              \
+			--disable-bsd-user              \
+			--disable-xen                   \
+			--disable-slirp                 \
+			--disable-vnc                   \
+			--disable-virtfs                \
+			--disable-brlapi                \
+			--disable-curses                \
+			--disable-curl                  \
+			--disable-bluez                 \
+			--disable-guest-base            \
+			--disable-uuid                  \
+			--disable-vde                   \
+			--disable-linux-aio             \
+			--disable-cap-ng                \
+			--disable-docs                  \
+			--disable-spice                 \
+			--disable-rbd                   \
+			--disable-libiscsi              \
+			--disable-usb-redir             \
+			--disable-smartcard-nss         \
+			--disable-strip                 \
+			--disable-seccomp               \
+			--disable-sparse                \
+			--disable-tools                 \
+			$(QEMU_OPTS)                    \
 	)
 endef
 

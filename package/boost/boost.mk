@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BOOST_VERSION = 1.56.0
+BOOST_VERSION = 1.57.0
 BOOST_SOURCE = boost_$(subst .,_,$(BOOST_VERSION)).tar.bz2
 BOOST_SITE = http://downloads.sourceforge.net/project/boost/boost/$(BOOST_VERSION)
 BOOST_INSTALL_STAGING = YES
@@ -92,8 +92,8 @@ BOOST_OPTS += toolset=gcc \
 	     threading=multi \
 	     abi=$(BOOST_ABI) \
 	     variant=$(if $(BR2_ENABLE_DEBUG),debug,release) \
-	     link=$(if $(BR2_PREFER_STATIC_LIB),static,shared) \
-	     runtime-link=$(if $(BR2_PREFER_STATIC_LIB),static,shared)
+	     link=$(if $(BR2_STATIC_LIBS),static,shared) \
+	     runtime-link=$(if $(BR2_STATIC_LIBS),static,shared)
 
 ifeq ($(BR2_PACKAGE_BOOST_LOCALE),y)
 ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
@@ -125,6 +125,7 @@ define BOOST_INSTALL_TARGET_CMDS
 	--user-config=$(@D)/user-config.jam \
 	$(BOOST_OPTS) \
 	--prefix=$(TARGET_DIR)/usr \
+	--ignore-site-config \
 	--layout=$(BOOST_LAYOUT) install )
 endef
 
@@ -132,6 +133,7 @@ define HOST_BOOST_BUILD_CMDS
 	(cd $(@D) && ./b2 -j$(PARALLEL_JOBS) -q -d+1 \
 	--user-config=$(@D)/user-config.jam \
 	$(HOST_BOOST_OPTS) \
+	--ignore-site-config \
 	--prefix=$(HOST_DIR)/usr )
 endef
 
@@ -140,6 +142,7 @@ define HOST_BOOST_INSTALL_CMDS
 	--user-config=$(@D)/user-config.jam \
 	$(HOST_BOOST_OPTS) \
 	--prefix=$(HOST_DIR)/usr \
+	--ignore-site-config \
 	--layout=$(BOOST_LAYOUT) install )
 endef
 
@@ -148,6 +151,7 @@ define BOOST_INSTALL_STAGING_CMDS
 	--user-config=$(@D)/user-config.jam \
 	$(BOOST_OPTS) \
 	--prefix=$(STAGING_DIR)/usr \
+	--ignore-site-config \
 	--layout=$(BOOST_LAYOUT) install)
 endef
 

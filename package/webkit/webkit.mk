@@ -27,7 +27,7 @@ WEBKIT_INSTALL_TARGET_OPTS = -j1 DESTDIR=$(TARGET_DIR) install
 # in newer releases
 define DISABLE_INDEXED_DATABASE
 	$(SED) '/ENABLE_INDEXED_DATABASE/s:1:0:' \
-			$(@D)/Source/WebCore/GNUmakefile.features.am
+		$(@D)/Source/WebCore/GNUmakefile.features.am
 endef
 
 WEBKIT_PRE_CONFIGURE_HOOKS += DISABLE_INDEXED_DATABASE
@@ -40,6 +40,7 @@ WEBKIT_CONF_ENV = ac_cv_path_icu_config=$(STAGING_DIR)/usr/bin/icu-config \
 	AR_FLAGS="cru"
 
 WEBKIT_CONF_OPTS += \
+	--enable-dependency-tracking \
 	--with-gtk=2.0 \
 	--disable-geolocation \
 	--disable-webkit2 \

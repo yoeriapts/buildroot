@@ -5,7 +5,7 @@
 ################################################################################
 
 VLC_VERSION = 2.1.5
-VLC_SITE = http://download.videolan.org/pub/videolan/vlc/$(VLC_VERSION)
+VLC_SITE = http://get.videolan.org/vlc/$(VLC_VERSION)
 VLC_SOURCE = vlc-$(VLC_VERSION).tar.xz
 VLC_LICENSE = GPLv2+ LGPLv2.1+
 VLC_LICENSE_FILES = COPYING COPYING.LIB
@@ -45,7 +45,7 @@ VLC_CONF_OPTS += \
 	--disable-opencv
 
 # Building static and shared doesn't work, so force static off.
-ifeq ($(BR2_PREFER_STATIC_LIB),)
+ifeq ($(BR2_STATIC_LIBS),)
 VLC_CONF_OPTS += --disable-static
 endif
 
@@ -224,18 +224,15 @@ else
 VLC_CONF_OPTS += --disable-libxml2
 endif
 
-# live555 installs a static library only, and vlc tries to link it into a
-# shared library - which doesn't work. So only enable live555 if static.
-ifeq ($(BR2_PACKAGE_LIVE555)$(BR2_PREFER_STATIC_LIB),yy)
+ifeq ($(BR2_PACKAGE_LIVE555),y)
 VLC_CONF_OPTS += --enable-live555
 VLC_DEPENDENCIES += live555
 VLC_CONF_ENV += \
 	LIVE555_CFLAGS="\
-		-I$(STAGING_DIR)/usr/include/live \
-		-I$(STAGING_DIR)/usr/include/live/BasicUsageEnvironment \
-		-I$(STAGING_DIR)/usr/include/live/groupsock \
-		-I$(STAGING_DIR)/usr/include/live/liveMedia \
-		-I$(STAGING_DIR)/usr/include/live/UsageEnvironment \
+		-I$(STAGING_DIR)/usr/include/BasicUsageEnvironment \
+		-I$(STAGING_DIR)/usr/include/groupsock \
+		-I$(STAGING_DIR)/usr/include/liveMedia \
+		-I$(STAGING_DIR)/usr/include/UsageEnvironment \
 		" \
 	LIVE555_LIBS="-L$(STAGING_DIR)/usr/lib -lliveMedia"
 else
@@ -252,9 +249,9 @@ endif
 ifeq ($(BR2_PACKAGE_QT_GUI_MODULE),y)
 VLC_CONF_OPTS += --enable-qt
 VLC_CONF_ENV += \
-       ac_cv_path_MOC=$(HOST_DIR)/usr/bin/moc \
-       ac_cv_path_RCC=$(HOST_DIR)/usr/bin/rcc \
-       ac_cv_path_UIC=$(HOST_DIR)/usr/bin/uic
+	ac_cv_path_MOC=$(HOST_DIR)/usr/bin/moc \
+	ac_cv_path_RCC=$(HOST_DIR)/usr/bin/rcc \
+	ac_cv_path_UIC=$(HOST_DIR)/usr/bin/uic
 VLC_DEPENDENCIES += qt
 else
 VLC_CONF_OPTS += --disable-qt

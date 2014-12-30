@@ -28,7 +28,7 @@
 all:
 
 # Set and export the version string
-export BR2_VERSION := 2014.11-git
+export BR2_VERSION := 2015.02-git
 
 # Check for minimal make version (note: this check will break at make 10.x)
 MIN_MAKE_VERSION = 3.81
@@ -123,8 +123,9 @@ $(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
 # On subsequent invocations of make, it is read in. It can still be overridden
 # on the command line, therefore the file is re-created every time make is run.
 #
-# When BR2_EXTERNAL is not set, the .br-external file is removed and we point
-# to support/dummy-external. This makes sure we can unconditionally include the
+# When BR2_EXTERNAL is set to an empty value (e.g. explicitly in command
+# line), the .br-external file is removed and we point to
+# support/dummy-external. This makes sure we can unconditionally include the
 # Config.in and external.mk from the BR2_EXTERNAL directory. In this case,
 # override is necessary so the user can clear BR2_EXTERNAL from the command
 # line, but the dummy path is still used internally.
@@ -514,13 +515,13 @@ endif
 # not have them (Linaro toolchains), we use the ones available on the
 # host machine.
 ifeq ($(BR2_TOOLCHAIN_USES_GLIBC),y)
-GENERATE_LOCALE = $(call qstrip,$(BR2_GENERATE_LOCALE))
-ifneq ($(GENERATE_LOCALE),)
+GLIBC_GENERATE_LOCALES = $(call qstrip,$(BR2_GENERATE_LOCALE))
+ifneq ($(GLIBC_GENERATE_LOCALES),)
 TARGETS += host-localedef
 
-define GENERATE_LOCALES
+define GENERATE_GLIBC_LOCALES
 	$(Q)mkdir -p $(TARGET_DIR)/usr/lib/locale/
-	$(Q)for locale in $(GENERATE_LOCALE) ; do \
+	$(Q)for locale in $(GLIBC_GENERATE_LOCALES) ; do \
 		inputfile=`echo $${locale} | cut -f1 -d'.'` ; \
 		charmap=`echo $${locale} | cut -f2 -d'.' -s` ; \
 		if test -z "$${charmap}" ; then \
@@ -535,7 +536,7 @@ define GENERATE_LOCALES
 			$${locale} ; \
 	done
 endef
-TARGET_FINALIZE_HOOKS += GENERATE_LOCALES
+TARGET_FINALIZE_HOOKS += GENERATE_GLIBC_LOCALES
 endif
 endif
 

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BASH_VERSION = 4.3
+BASH_VERSION = 4.3.30
 BASH_SITE = $(BR2_GNU_MIRROR)/bash
 # Build after since bash is better than busybox shells
 BASH_DEPENDENCIES = ncurses readline host-bison \
@@ -26,8 +26,19 @@ BASH_CONF_ENV += \
 BASH_MAKE = $(MAKE1)
 
 # The static build needs some trickery
-ifeq ($(BR2_PREFER_STATIC_LIB),y)
+ifeq ($(BR2_STATIC_LIBS),y)
 BASH_CONF_OPTS += --enable-static-link --without-bash-malloc
+# bash wants to redefine the getenv() function. To check whether this is
+# possible, AC_TRY_RUN is used which is not possible in
+# cross-compilation.
+# On uClibc, redefining getenv is not possible; on glibc and musl it is.
+# Related:
+# http://lists.gnu.org/archive/html/bug-bash/2012-03/msg00052.html
+ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
+BASH_CONF_ENV += bash_cv_getenv_redef=no
+else
+BASH_CONF_ENV += bash_cv_getenv_redef=yes
+endif
 endif
 
 # Make /bin/sh -> bash (no other shell, better than busybox shells)

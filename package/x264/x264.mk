@@ -14,7 +14,7 @@ X264_INSTALL_STAGING = YES
 
 ifeq ($(BR2_i386)$(BR2_x86_64),y)
 X264_DEPENDENCIES += host-yasm
-else ifeq ($(BR2_cortex_a5)$(BR2_cortex_a7)$(BR2_cortex_a8)$(BR2_cortex_a9)$(BR2_cortex_a12)$(BR2_cortex_a15),y)
+else ifeq ($(BR2_ARM_CPU_ARMV7A),y)
 # We need to pass gcc as AS, because the ARM assembly files have to be
 # preprocessed
 X264_CONF_ENV += AS="$(TARGET_CC)"
@@ -22,7 +22,7 @@ else
 X264_CONF_OPTS += --disable-asm
 endif
 
-ifeq ($(BR2_PREFER_STATIC_LIB),)
+ifeq ($(BR2_STATIC_LIBS),)
 X264_CONF_OPTS += --enable-pic --enable-shared
 endif
 
@@ -42,6 +42,7 @@ define X264_CONFIGURE_CMDS
 		--cross-prefix="$(TARGET_CROSS)" \
 		--disable-ffms \
 		--enable-static \
+		--disable-opencl \
 		$(X264_CONF_OPTS) \
 	)
 endef

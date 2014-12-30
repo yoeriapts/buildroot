@@ -1,6 +1,7 @@
-comment "QEMU requires a toolchain with threads"
+comment "QEMU requires a toolchain with IPv6, wchar, threads"
 	depends on BR2_i386 || BR2_x86_64
-	depends on !BR2_TOOLCHAIN_HAS_THREADS
+	depends on BR2_USE_MMU
+	depends on !(BR2_TOOLCHAIN_HAS_THREADS && BR2_USE_WCHAR && BR2_INET_IPV6)
 
 config BR2_PACKAGE_QEMU
 	bool "QEMU"
@@ -8,6 +9,7 @@ config BR2_PACKAGE_QEMU
 	depends on BR2_TOOLCHAIN_HAS_THREADS
 	depends on BR2_USE_WCHAR # gettext
 	depends on BR2_USE_MMU # fork()
+	depends on BR2_INET_IPV6 # for linux-user
 	select BR2_PACKAGE_LIBGLIB2
 	select BR2_PACKAGE_PIXMAN
 	select BR2_PACKAGE_ZLIB
@@ -52,6 +54,7 @@ comment "... or you can select emulator families to enable, below:"
 
 config BR2_PACKAGE_QEMU_SYSTEM
 	bool "Enable all systems emulation"
+	select BR2_PACKAGE_QEMU_FDT
 	help
 	  Say 'y' to build all system emulators/virtualisers that QEMU supports.
 
@@ -65,8 +68,8 @@ config BR2_PACKAGE_QEMU_LINUX_USER
 endif # BR2_PACKAGE_QEMU_CUSTOM_TARGETS == ""
 
 config BR2_PACKAGE_QEMU_HAS_EMULS
-    def_bool y
-    depends on BR2_PACKAGE_QEMU_SYSTEM || BR2_PACKAGE_QEMU_LINUX_USER || BR2_PACKAGE_QEMU_CUSTOM_TARGETS != ""
+	def_bool y
+	depends on BR2_PACKAGE_QEMU_SYSTEM || BR2_PACKAGE_QEMU_LINUX_USER || BR2_PACKAGE_QEMU_CUSTOM_TARGETS != ""
 
 if BR2_PACKAGE_QEMU_HAS_EMULS
 
@@ -78,6 +81,15 @@ config BR2_PACKAGE_QEMU_SDL
 	help
 	  Say 'y' to enable the SDL frontend, that is, a graphical window
 	  presenting the VM's display.
+
+comment "Misc. features"
+
+config BR2_PACKAGE_QEMU_FDT
+	bool "Enable FDT"
+	select BR2_PACKAGE_DTC
+	help
+	  Say 'y' here to have QEMU capable of constructing Device Trees,
+	  and passing them to the VMs.
 
 endif # BR2_PACKAGE_QEMU_HAS_EMULS
 

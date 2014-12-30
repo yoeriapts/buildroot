@@ -11,7 +11,7 @@ LFTP_LICENSE_FILES = COPYING
 LFTP_AUTORECONF = YES
 LFTP_DEPENDENCIES = readline zlib host-pkgconf
 
-ifneq ($(BR2_PREFER_STATIC_LIB),y)
+ifneq ($(BR2_STATIC_LIBS),y)
 LFTP_CONF_OPTS += --with-modules
 endif
 
@@ -31,7 +31,7 @@ endif
 
 # Remove /usr/share/lftp
 define LFTP_REMOVE_DATA
-        $(RM) -fr $(TARGET_DIR)/usr/share/lftp
+	$(RM) -fr $(TARGET_DIR)/usr/share/lftp
 endef
 
 LFTP_POST_INSTALL_TARGET_HOOKS += LFTP_REMOVE_DATA

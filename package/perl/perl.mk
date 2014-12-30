@@ -12,7 +12,7 @@ PERL_LICENSE = Artistic or GPLv1+
 PERL_LICENSE_FILES = Artistic Copying README
 PERL_INSTALL_STAGING = YES
 
-PERL_CROSS_VERSION = 0.9.3
+PERL_CROSS_VERSION = 0.9.4
 PERL_CROSS_BASE_VERSION = 5.$(PERL_VERSION_MAJOR).1
 # DO NOT refactor with the github helper (the result is not the same)
 PERL_CROSS_SITE = http://raw.github.com/arsv/perl-cross/releases
@@ -42,10 +42,10 @@ endef
 PERL_POST_PATCH_HOOKS += PERL_CROSS_SET_POD
 
 ifeq ($(BR2_PACKAGE_BERKELEYDB),y)
-    PERL_DEPENDENCIES += berkeleydb
+PERL_DEPENDENCIES += berkeleydb
 endif
 ifeq ($(BR2_PACKAGE_GDBM),y)
-    PERL_DEPENDENCIES += gdbm
+PERL_DEPENDENCIES += gdbm
 endif
 
 # We have to override LD, because an external multilib toolchain ld is not
@@ -66,15 +66,15 @@ PERL_CONF_OPTS = \
 	-Dperladmin=root
 
 ifeq ($(shell expr $(PERL_VERSION_MAJOR) % 2), 1)
-    PERL_CONF_OPTS += -Dusedevel
+PERL_CONF_OPTS += -Dusedevel
 endif
 
-ifeq ($(BR2_PREFER_STATIC_LIB),y)
-    PERL_CONF_OPTS += --all-static --no-dynaloader
+ifeq ($(BR2_STATIC_LIBS),y)
+PERL_CONF_OPTS += --all-static --no-dynaloader
 endif
 
 ifneq ($(BR2_LARGEFILE),y)
-    PERL_CONF_OPTS += -Uuselargefiles
+PERL_CONF_OPTS += -Uuselargefiles
 endif
 
 PERL_MODULES = $(call qstrip,$(BR2_PACKAGE_PERL_MODULES))
@@ -98,6 +98,10 @@ endef
 define PERL_INSTALL_TARGET_CMDS
 	$(MAKE1) -C $(@D) DESTDIR="$(TARGET_DIR)" install.perl
 endef
+
+# We never want to have host-berkeleydb or host-gdbm as dependencies
+# of host-perl.
+HOST_PERL_DEPENDENCIES =
 
 HOST_PERL_CONF_OPTS = \
 	-des \
